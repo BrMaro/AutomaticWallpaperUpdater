@@ -3,7 +3,7 @@ import random
 import requests
 from bs4 import BeautifulSoup
 import ctypes
-
+from datetime import date
 
 def get_current_wallpaper():
     # Buffer to store the wallpaper path
@@ -53,7 +53,7 @@ def get_ua():
     return random.choice(uastrings)
 
 
-def main():
+def main_4k():
     ua = get_ua()
     website_url = "https://4kwallpapers.com/"
     url = "https://4kwallpapers.com/ultrawide-monitor-hd-wallpapers/"
@@ -85,4 +85,27 @@ def main():
 
         ctypes.windll.user32.SystemParametersInfoW(20, 0, chosen_image_path, 0)
 
-main()
+# Extracts images from the APOD website
+def main_apod():
+    ua = get_ua()
+    website_url = "https://apod.nasa.gov/apod/"
+    headers = {"User-Agent":ua}
+    response = requests.get(website_url,headers=headers)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text,'html.parser')
+        img = soup.find("img")
+        img_src = img.get('src')
+        img_name = f"APOD img for {date.today()}"
+        storage_folder = "C:\\Users\\Techron\\PycharmProjects\\AutomaticWallpaperUpdater\\APOD"
+        if not os.path.isfile(os.path.join(storage_folder,img_name)):
+            download_image(website_url + img_src, os.path.join(storage_folder, img_name))
+        else:
+            print("In Library")
+
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, os.path.join(storage_folder, img_name), 0)
+
+    else:
+        print(f"Error {response.status_code}")
+
+main_apod()
